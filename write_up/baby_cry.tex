@@ -46,31 +46,53 @@ linkbordercolor={0 0 1}
 \end{abstract}
 
 \section{Problem Statement and Motivation}
-\textit{Give a clear statement of the problems or questions the project addresses, their context, and a compelling motivation for why they are worth studying. The problems or questions your project addresses should be original, meaningful, and reflect a deep understanding of the subject and its subtleties.}
+\textit{TAYLOR: Give a clear statement of the problems or questions the project addresses, their context, and a compelling motivation for why they are worth studying. The problems or questions your project addresses should be original, meaningful, and reflect a deep understanding of the subject and its subtleties.}
 
 \textit{Briefly review what is already known about the research questions and what techniques others have used to study these questions. Explain the scope of the project and how it fits into existing research.}
 
 
 \section{Data}
-\textit{Briefly discuss the sources, reliability, and suitability of your data for the problems you are addressing. The dataset should be large enough and rich enough to give reliable, meaningful, and nuanced answers to the questions and problems addressed in your project.}
+The data we use for this analysis is sourced from a corpus entitled
+the "Donate-a-Cry Corpus."
+This corpus, a compilation of audio recordings of babies crying, appears to have originally been collected as part of a campaign entitled the "Donate-a-Cry Campaign" in Sweden in 2015.
+More infomation about this campaign cannot be ascertained as the listed campaign website in the github repository has been converted into a website for Japanese escorts.
+Further work on this dataset, including removing background noise, standardizing sample rates, and eliminating outliers, was completed by researchers at the Royal Institute of Technology of Sweden in 2018.
+
+This dataset contains 457 recordings (all in .wav format and all about 7 seconds long) of babies crying, each a different baby and each collected by the baby's mother.
+These recordings were each labeled with an assumed reason for the cry instance by the mother and then submitted to the corpus.
+The data contain 5 different label categories: belly pain, needing to burp, hunger, tiredness, and discomfort.
+
+The two main issues to deal with in working with this cry corpus have to do with label representation.
+Over 350 of the audio files belong to the "hungry" category, comprising over $2/3$ of the dataset, while none of the other four categories contained more than 26 audio files.
+To combat this, we first cut each audio file down to 3 seconds in length under the assumption that any information contained in the first half of a cry would also be contained in the second half.
+We discared the second halves of all of the hungry crying data, and kept the second halves of all other categories.
+This allowed us to effectively double the number of samples we had in each category.
+Second, we duplicated each non-hungry datapoint and added small amounts of noise proportional to each wavelength of the sample.
+This allowed us to create even more unique data corresponding to these labels while feeling safe that these new datapoints would contain the same features that the non-synthetic data contained.
+This process left us with exactly 400 unique datapoints to use in training and testing our models.
+
+To extract features from this data, we took the Fourier transform of the sound files, and then normalizing the frequencies produced.
+This allowed us to eliminate the time dimension and analyze if the frequencies in a baby's cry contain the requisite information to differentiate the reasons for crying.
+
 
 \section{Methods}
-\textit{Your project should involve a thoughtful and original use of several of the machine learning methods and ideas we have learned in class and at least one idea or method we have not covered in class. In this section you should describe and justify your selection of models, your choices of methods, and the ways and reasons you chose your hyperparameters or network architectures. You should also describe the additional method you chose to use, the mathematics of how it works, and why it might be well-suited to your dataset. Your discussion should demonstrate a clear understanding of the principles involved and of the strengths and weaknesses of the models and methods used.}
-
-\textit{It should be noted that while the additional method you choose must not be one of the ones covered in class, it can be related to them. For example, even though we will cover both regular and convolution neural networks in class, you could still implement a different flavor of network (i.e. a recurrent neural network, an object detection network, etc.) for your additional algorithm. The purpose of this portion is to accustom you to reading and implementing current machine learning literature, since doing so is the only way to remain competitive in such a fast-moving field.}
-
-Here are the methods we could use on the data:
+We began our analysis by testing baseline performance of several models to see how well a variety of models would handle our dataset. At this stage of our project, we are mainly concerned with which models fit our task the best. In further iterations, we will have chosen a model and will have made itentional choices of hyperparameters, architectures, etc. The models we initially used are as follows:
 \begin{itemize}
-   \item
-   \item
+   \item{PCA}
+   \item{OLS}
+   \item{SVM}
+   \item{Random Forest}
+   \item{Kmeans}
+   \item{GDA}
+   \item{LDA}
 \end{itemize}
 
-
 \section{Results}
-\textit{Clearly and succinctly describe your results.}
+At this point in time, we have not successfully been able to identify a featureset/model/hyperparameter combination that performs our classification task any better than $\sim70\%$ average accuracy. The models with most consistent performance were the Random Forest classifier and the LDA algorithm. The models that performed the worst were the QDA algorithm and the OLS algorithm.
+Surprisingly, running a PCA on our data, on both the frequencies gathered from the Fourier transform and on the raw wavelength data, suggested that much of the variance could be explained with just the first 25\% of components.
 
 \section{Analysis}
-\textit{Give a thorough analysis and a thoughtful discussion of the results and conclusions that can be drawn. Discuss the suitability and effectiveness of the different models and methods for the problems or questions treated.}
+\textit{SIMPLE: Give a thorough analysis and a thoughtful discussion of the results and conclusions that can be drawn. Discuss the suitability and effectiveness of the different models and methods for the problems or questions treated.}
 
 \section{Conclusion}
 \textit{Briefly summarize what you have done and describe the final conclusions that you draw from your computations, results, and analysis.}
