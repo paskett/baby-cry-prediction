@@ -37,18 +37,42 @@ linkbordercolor={0 0 1}
 
 \pagestyle{fancyplain}
 \headsep 1.5em
-\title{Baby Cry Prediction}
+\title{Infant Cry Prediction}
+
+\author{Jake Callahan, Taylor Paskett}
 
 \begin{document}
 \maketitle
+
 \begin{abstract}
    TODO - A one-paragraph abstract (tl;dr) is required. Summarize the main question and conclusions. Put this below the title but before the main text.
 \end{abstract}
 
 \section{Problem Statement and Motivation}
-\textit{TAYLOR: Give a clear statement of the problems or questions the project addresses, their context, and a compelling motivation for why they are worth studying. The problems or questions your project addresses should be original, meaningful, and reflect a deep understanding of the subject and its subtleties.}
+Parents of newborns are constantly exposed to the cries of their baby.
+After some time, parents can often recognize the cries of their newborn and what they mean [citation here].
+For instance, an experienced parent may be able to differentiate between a hungry cry and a tired cry.
+This is an acquired skill, however, and incessant crying (often referred to as \textit{colic}) has been shown to have adverse effects on parents.
+Zeifman et al. have suggested that there are "physiological and neural responses to crying that may predispose some adults to maltreat infants." [\url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5494986/#R5}]
+Some research suggests that an infant's cries may not differentiate between causes, only indicating the severity of the infant's distress.
+This research posits that parents need other contextual clues to properly determine the cause of crying.
 
-\textit{Briefly review what is already known about the research questions and what techniques others have used to study these questions. Explain the scope of the project and how it fits into existing research.}
+( for instance, see the following citation (can find on hbll website):
+Gustafson GE, Wood RM, Green JA. Can we hear the causes of infant’s crying? *. In: Barr RG, Hopkins B, Green JA, editors. Crying as A Sign, A Symptom, \& A Signal: Clinical Emotional and Developmental Aspects of Infant and Toddler Crying. Cambridge University Press; 2000. pp. 8–22. This book chapter reviews evidence for the claim that infants have distinct cries for different eliciting circumstances. Although infant crying reflects differences in the degree of infant distress, research suggests that contextual information is needed to determine the specific cause of crying. )
+
+However, it is unclear what methods the authors used to differentiate cries.
+We believe that it may be possible for a computer to classify crying when humans cannot.
+If this is possible, it could assist parents, helping them diagnose the source of their child's cries.
+In turn, this may reduce maltreatment of infants.
+
+In our project, we hope to address both of the following questions:
+\begin{enumerate}
+   \item Do different "cry types" exist? Meaning, are there objective differences between an infant's cries based on what they want?
+   \item If cry types exist, can we accurately predict these cry types using audio of the infant?
+\end{enumerate}
+
+This problem has been studied by others, such as [the people we got our data from].
+They found that [INSERT FINDINGS HERE].
 
 
 \section{Data}
