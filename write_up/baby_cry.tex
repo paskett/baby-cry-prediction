@@ -25,7 +25,9 @@ linkbordercolor={0 0 1}
 \maketitle
 
 \begin{abstract}
-   TODO - A one-paragraph abstract (tl;dr) is required. Summarize the main question and conclusions. Put this below the title but before the main text.
+   The problem of identifying why an infant is crying is one that has plagued parents since the dawn of time.
+   There is sparse research to suggest that infants do not modify their cries based on the reason for their crying, but we propose that it might be possible to use machine learning techniques to identify the reasons for an infant's cry. 
+   In this paper we explore several techniques to classify infant cries, including classical machine learning techniques and more modern deep learning methods, and ultimately conclude that there is compelling evidence to suggest it is possible for a machine learning model to classify the reasons for infant cries with a high degree of accuracy.
 \end{abstract}
 
 \section{Problem Statement and Motivation}
@@ -57,7 +59,7 @@ They found that [INSERT FINDINGS HERE].
 
 \section{Data}
 The data we use for this analysis is sourced from a corpus entitled
-the "Donate-a-Cry Corpus."
+the "Donate-a-Cry Corpus" [https://github.com/gveres/donateacry-corpus].
 This corpus, a compilation of audio recordings of babies crying, appears to have originally been collected as part of a campaign entitled the "Donate-a-Cry Campaign" in Sweden in 2015.
 More infomation about this campaign cannot be ascertained as the listed campaign website in the github repository has been converted into a website for Japanese escorts.
 Further work on this dataset, including removing background noise, standardizing sample rates, and eliminating outliers, was completed by researchers at the Royal Institute of Technology of Sweden in 2018.
@@ -94,13 +96,14 @@ Note that since there are five classes, a score of $20\%$ is about what we would
       Ordinary Least Squares & 0.15 & 0.23 \\
       Gaussian Discriminant Analysis & 0.40 & 0.38 \\
       Linear Discriminant Analysis & 0.66 & 0.49 \\
-      Support Vector Machine & TODO &  TODO\\
-      Random Forest Classifier & TODO & TODO\\
+      Support Vector Machine & 0.71 &  0.68\\
+      XGBoost & 0.76 & 0.68 \\
+      Random Forest Classifier & 0.74 & 0.5\\
       \hline
    \end{tabular}
 \end{center}
 As we can see, in almost every case, the raw audio data performed better than the frequency data.
-This was surprising to us, but indicated that the Fourier transform may be removing useful features from the data.
+This was surprising to us, but it indicated that the Fourier transform may be removing useful features from the data.
 One explanation for this is could be that in the three-second timeframe, the babies' cries we analyze are not very periodic, so the Fourier transform is not very useful.
 Recall that the Fourier transform decomposes a signal into constituent frequencies.
 A baby's cry does not sound like a single note from a piano; the cry is composed of a cacophony of superimposed frequencies, which vary over time.
@@ -109,7 +112,7 @@ This might lose the information that allows us to differentiate their cries.
 This hypothesis has some evidence based on the sample variances of the training data.
 Using the 2-norm to measure distance from the mean, the frequency training data has a variance of about $ 300 $, while the raw audio data has a variance of about $ 1.1 \times 10^{14} $.
 
-In the upcoming sections, we hope to perform better than Linear Discriminant Analysis (LDA) and the Random Forest classifier.
+In the following sections, we attempted to perform better than Linear Discriminant Analysis (LDA), the XGBoost classifier, and the Random Forest classifier.
 We were able to outperform these methods when we used neural networks, as will be seen later.
 
 \subsection{Principle Component Analysis}
@@ -121,7 +124,7 @@ TODO: Put PCA graph here.
 In automatic speech recognition, Mel-frequency Cepstral Coefficients (MFCCs) have been a popular feature to use, especially in tandem with Gaussian Mixture Hidden Markov Models (GMMHMMs).
 We wanted to try using a GMMHMM on our baby cry dataset because these models have been successful in classifying speech in the past.
 In addition to being combined with GMMHMMs, MFCCs have several advantages compared to Fourier transform frequencies, which we will outline in this section.
-First, we need to know how the MFCCs are computed.
+First, we review how the MFCCs are computed.
 MFCCs are computed from audio data using the following steps:
 \begin{enumerate}
    \item divide the audio into frames;
@@ -154,8 +157,8 @@ where $ \mathscr{F} $ denotes the discrete Fourier transform and $ N $ is the nu
 
 In step four, we apply a Mel scale to the frequencies computed in the last step.
 The Mel scale relates frequencies to human hearing.
-At low freqencies, humans are able to discern very small changes.
-However, at higher frequencies, humans can't perceive as small of changes.
+At low frequencies, humans are able to discern very small changes.
+However, at higher frequencies, humans lose the ability to perceive such granularity.
 The Mel scale filters the frequencies so that we now have a more dense set of lower frequencies and a sparser set of high frequencies, modeling human hearing.
 
 Finally, because the Mel-scale frequencies are highly correlated in step four, a DCT is applied to them in order to decorrelate them.
@@ -164,61 +167,77 @@ Decorrelating them means that in a Hidden Markov Model (HMM) classifier, diagona
 \subsection{Gaussian Mixture Hidden Markov Model}
 After computing the MFCCs, we used a GMMHMM classifier to predict each baby's cry type.
 This model was slow to train, and sadly, even after a hyperparameter grid search, its score was only $ 0.44 $.
-So, both LDA and the Random Forest classifier outperformed GMMHMM.
-At this point, it seemed very likely that our best bet would be neural networks.
-Even though GMMHMM classifiers were often used for automatic speech recognition in the past, neural networks have since replaced them as the industry standard.
+So, both LDA, XGBoost, and the Random Forest classifier outperformed GMMHMM.
+At this point, it seemed very likely that our best option would be neural networks:
+even though GMMHMM classifiers were often used for automatic speech recognition in the past, neural networks have since replaced them as the industry standard.
 
 \subsection{Neural Networks}
-One of the main problems with using neural networks on our dataset is our lack of data.
-With only 400 data points, we strongly risk overfitting.
-Another obstacle to utilizing neural networks also concerns overfitting, but in a different way.
-If we use the raw audio data to train a neural network, there is a chance that the resulting model will not be generalizable when new data is used.
-In order to solve both of these problems, we decided to use Mel Spectrograms as the input data to our networks.
-Mel spectrograms are computed in the same exact way as MFCCs except for the final decorrelation step, which is omitted.
+Neural networks have become widely accepted as the best method for performing speech recognition, we wish to apply them to our problem but one of the of the main problems with using neural networks on our dataset is our lack of data:
+with only 400 data points, we strongly risk overfitting.
+Similarly, if we use the raw audio data to train a neural network, there is a chance that the resulting model will not be generalizable when new data is used.
+In order to solve both of these problems, we used Mel Spectrograms as the input data to our networks.
+Mel spectrograms are computed in the same exact way as MFCCs except for the final decorrelation step, which is omitted. 
 Since neural networks perform well with correlated data, this shouldn't be a problem.
-We believe that using Mel spectrograms will help the models to be more generalizable in two ways:
+We believe there to be two ways in which using Mel spectrograms can improve performance in our classification task. First, it  will help the models to be more generalizable in two ways:
 \begin{itemize}
    \item Spectrograms can conveniently be thought of as images, which allows for the use of convolutional neural networks and provides an easy way to further augment our data by translating and skewing the spectrograms.
-   \item The spectrograms may be more robust in terms of being similar to new data when it is brought in.
+   \item The spectrograms may be more robust in terms of being similar to new data we might wish to classify.
 \end{itemize}
+Second, Mel Spectrograms correlate frequency with time, which can possibly provide valuable information to a classifier such as an LSTM or CNN.
+\begin{figure}[!htb]
+\begin{center}
+   \includegraphics[width=0.4\linewidth]{../rnn_models/example_mels.pdf}
+   \caption{An example Mel spectrogram of a baby cry with the label "hungry"}
+\end{center}
+\end{figure}
+\subsubsection{Recurrent Neural Network}
+\begin{figure}[!htb]
+\begin{center}
+   \includegraphics[width=0.8\linewidth]{../rnn_models/rnn_loss_acc.pdf}
+   \caption{RNN loss and accuracy using a batch size of 16 over 100 epochs}
+\end{center}
+\end{figure}
+Recurrent neural networks are a commonly used tool in the field of audio classification. 
+They perform remarkably well on tasks that require some form of time-dependent learning, and since our classification task involves an element of time dependency, we thought it prudent to begin with a recurrent neural network.
+We chose to implement a simplified version of the Bidirectional Long-Short Term Memory Network proposed by Keren and Schuller [TODO: citation] using code provided by Carlo Lepelaars [https://www.kaggle.com/carlolepelaars/bidirectional-lstm-for-audio-labeling-with-keras]. This is a special form of recurrent neural network that can capture time-dependent information independent of ordering; that is, it can capture future and past information in each time step.
+This network was designed for usage with time-related image inputs, making it a seemingly suitable choice for our classification task. 
+We structured our network with a single bidirectional LSTM layer (a layer containing one forward LSTM layer and one backward LSTM layer) followed by an attention pass and small dropout (0.2). We then pass to a dense layer with exponential linear unit activation, another dropout, and a final 5-node dense layer activated with softmax.
+Using this model we achieved 70\% validation accuracy and 90\% training accuracy (See: Figure 2). 
+While encouraging, it is possible this model is overfitting to the data provided.
+
 
 \subsubsection{Convolutional Neural Network}
 Our convolutional neural network had the following architecture.
 It contained four main sections, with the first three having the same design: a convolutional layer, a relu activation, and a max pooling layer.
 The fourth section flattens the data, uses a relu activation, then adds an aggressive dropout of $50 \%$.
-Finally, the output layer consists of five nodes with a softmax activation.
-The following graphs show the loss and accuracy over the $ 50 $ training epochs.
+Finally, the output layer consists of five nodes with a softmax activation. We achieved validation accuracy above 80\% using only Mel spectrograms generated from our original audio files and without performing any augmenting processes on the image data.
 \begin{figure}[!htb]
 \begin{center}
    \includegraphics[width=0.8\linewidth]{../cnn_models/first_try_loss_acc.pdf}
+   \caption{CNN loss and accuracy using a batch size of 16 [TODO: confirm batchsize] over 50 epochs}
 \end{center}
 \end{figure}
-
-
-
-\subsubsection{Recurrent Neural Network}
 
 \section{Results}
 At this point, we have successfully identified a featureset / model / hyperparameter combination that performs our classification task better than $\sim70\%$ average accuracy.
 The baseline models with most consistent performance were the Random Forest classifier and the LDA algorithm.
-The baseline models that performed the worst were the QDA algorithm and the OLS algorithm.
-Once we used Neural Networks, we were able to achieve higher than $ 80 \% $ accuracy, which is quite good.
-
+The baseline models that performed the worst were the GDA algorithm and the OLS algorithm.
+Once we used Neural Networks, we were able to achieve higher than $ 80 \% $ accuracy, which is quite good. In particular, the CNN architecture performed noticeably better than 
 
 
 \section{Analysis}
-\textit{SIMPLE: Give a thorough analysis and a thoughtful discussion of the results and conclusions that can be drawn. Discuss the suitability and effectiveness of the different models and methods for the problems or questions treated.}
-In trying to predict infants' cries, our models were able to achieve high accuracy, especially the neural networks.
-This indicates that there are machine-discernible patterns differentiating cry types.
-It would be very interesting to obtain more data and see if the models still hold up.
-It would also be helpful to have control over how the data is collected; setting it up as an experiment could yield even more fruitful results.
-
-
+First, it appears that there was important information to be captured in the time domain as evidenced by the poor performance of the Fourier-trained models., However, the superior performance of the CNN suggests that it was not the sequential information that mattered. 
+Thus, it appears that Mel spectrogram image data contained sufficient information to teach a model to recognize cry types.
+Overall, as our models (especially the neural networks) were able to achieve high accuracy, we feel there is evidence to suggest that there are machine-discernible patterns differentiating cry types.
+Although these results are encouraging, they are limited in scope at this time.  
+The first step in expanding this scope would be to obtain more data and see if the models still perform similarly. 
+Further, setting up a formalized experiment in which we have control over the data collection process could yield even more fruitful results.
 
 \section{Ethical Implications}
-TODO
-
+As with all machine learning applications, there are drawbacks to relying on computer-based decision making. 
+To a parent trying to care for an infant, a misclassification might lead to more stress for both parent and child, and, in situations where abuse is already a possibility, exacerbate the problem due to increased frustration. 
+Further, when discussing machine-assisted parenting, we must consider the consequences of outsourcing parental intuition: could a cry classifier damage or inhibit the parent-child relationship developed in infancy? 
+We believe that a tool like the one we propose would be a net benefit to parents and children, but the risks must still be analyzed.
 \section{Conclusion}
-\textit{Briefly summarize what you have done and describe the final conclusions that you draw from your computations, results, and analysis.}
-
+We believe the results we have found to be encouraging but ultimately inconclusive. Formalized testing, a more robust data set, and more data augmentation would provide much more insight into whether a machine learning cry detection tool would be useful in assisting parents in quieting their little ones. 
 \end{document}
